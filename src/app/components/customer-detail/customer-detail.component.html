@@ -1,0 +1,685 @@
+<div class="customer-detail-container">
+  
+  <div class="detail-header">
+    <div class="container-fluid py-4">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2">
+              <li class="breadcrumb-item">
+                <button class="btn btn-link p-0 text-light" (click)="navigateBack()">
+                  <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                </button>
+              </li>
+              <li class="breadcrumb-item active text-light">Detalles del Cliente</li>
+            </ol>
+          </nav>
+          
+          @if (customer(); as customerData) {
+            <h1 class="detail-title mb-2">
+              <i class="fas fa-user-circle me-3"></i>
+              {{ customerData.name }}
+            </h1>
+            <div class="customer-meta">
+              <span class="badge bg-primary me-2 fs-6">{{ customerData.plan_type }}</span>
+              <span class="text-light me-3">
+                <i class="fas fa-phone me-1"></i>
+                {{ customerData.phone | phone:'EC' }}
+              </span>
+              <span class="text-light">
+                <i class="fas fa-envelope me-1"></i>
+                {{ customerData.email }}
+              </span>
+            </div>
+          } @else {
+            <h1 class="detail-title">
+              <div class="d-flex align-items-center">
+                <div class="spinner-border spinner-border-sm text-light me-3"></div>
+                Cargando detalles del cliente...
+              </div>
+            </h1>
+          }
+        </div>
+        
+        <div class="col-lg-4 text-end">
+          <div class="detail-controls">
+            @if (consumption(); as consumptionData) {
+              <div class="status-badge mb-3">
+                <span class="badge fs-6" [ngClass]="getBadgeClass()">
+                  <i class="fas fa-circle me-1"></i>
+                  {{ getPlanStatusDescription() }}
+                </span>
+              </div>
+            }
+            
+            <div class="control-buttons">
+              <button 
+                class="btn btn-outline-light btn-sm me-2"
+                (click)="refreshData()"
+                [disabled]="isLoading() || refreshing()">
+                <i class="fas fa-sync-alt" [class.spin]="refreshing()"></i>
+                {{ refreshing() ? 'Actualizando...' : 'Actualizar' }}
+              </button>
+              
+              <div class="dropdown d-inline">
+                <button class="btn btn-outline-light btn-sm dropdown-toggle" 
+                        type="button" 
+                        data-bs-toggle="dropdown">
+                  <i class="fas fa-cog me-1"></i>
+                  Opciones
+                </button>
+                <ul class="dropdown-menu">
+                  <li>
+                    <button class="dropdown-item" (click)="downloadUsageHistory()">
+                      <i class="fas fa-download me-2"></i>
+                      Descargar Historial CSV
+                    </button>
+                  </li>
+                  <li>
+                    <button class="dropdown-item" (click)="generateDetailedReport()">
+                      <i class="fas fa-file-alt me-2"></i>
+                      Generar Reporte Completo
+                    </button>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <button class="dropdown-item" (click)="toggleAdvancedMetrics()">
+                      <i class="fas fa-chart-bar me-2"></i>
+                      {{ showAdvancedMetrics() ? 'Ocultar' : 'Mostrar' }} Métricas Avanzadas
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (isLoading() && !hasData()) {
+    <div class="loading-state">
+      <div class="container-fluid">
+        <div class="text-center py-5">
+          <div class="spinner-telcox mb-3"></div>
+          <h5 class="text-white">Cargando detalles del cliente...</h5>
+          <p class="text-light">Obteniendo información completa del sistema</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="error-state">
+      <div class="container-fluid">
+        <div class="alert alert-danger border-0 shadow">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+            <div class="flex-grow-1">
+              <h6 class="alert-heading mb-1">Error al cargar información</h6>
+              <p class="mb-2">{{ error() }}</p>
+              <button type="button" class="btn btn-outline-danger btn-sm me-2" (click)="refreshData()">
+                <i class="fas fa-redo me-1"></i>
+                Reintentar
+              </button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" (click)="navigateBack()">
+                <i class="fas fa-arrow-left me-1"></i>
+                Volver al Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (hasData()) {
+    <div class="detail-content">
+      <div class="container-fluid">
+        
+        @if (customerAlerts().length > 0) {
+          <div class="alerts-section mb-4">
+            @for (alert of customerAlerts(); track alert.category + alert.type) {
+              <div class="alert" [ngClass]="'alert-' + alert.type + ' border-0 shadow-sm'">
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-exclamation-triangle fa-lg me-3"></i>
+                  <div class="flex-grow-1">
+                    <strong>{{ alert.title }}</strong>
+                    <div class="mt-1">{{ alert.message }}</div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+        
+        <div class="row">
+          <div class="col-12">
+            <div class="card shadow-sm">
+              <div class="card-header bg-light border-0">
+                <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                  <li class="nav-item">
+                    <button 
+                      class="nav-link"
+                      [class.active]="selectedTab() === 'overview'"
+                      (click)="selectTab('overview')">
+                      <i class="fas fa-chart-pie me-2"></i>
+                      Resumen General
+                    </button>
+                  </li>
+                  <li class="nav-item">
+                    <button 
+                      class="nav-link"
+                      [class.active]="selectedTab() === 'usage'"
+                      (click)="selectTab('usage')">
+                      <i class="fas fa-chart-line me-2"></i>
+                      Historial de Uso
+                    </button>
+                  </li>
+                  <li class="nav-item">
+                    <button 
+                      class="nav-link"
+                      [class.active]="selectedTab() === 'billing'"
+                      (click)="selectTab('billing')">
+                      <i class="fas fa-file-invoice-dollar me-2"></i>
+                      Facturación
+                    </button>
+                  </li>
+                  <li class="nav-item">
+                    <button 
+                      class="nav-link"
+                      [class.active]="selectedTab() === 'network'"
+                      (click)="selectTab('network')">
+                      <i class="fas fa-wifi me-2"></i>
+                      Red y Conexión
+                    </button>
+                  </li>
+                  @if (showAdvancedMetrics()) {
+                    <li class="nav-item">
+                      <button 
+                        class="nav-link"
+                        [class.active]="selectedTab() === 'analytics'"
+                        (click)="selectTab('analytics')">
+                        <i class="fas fa-analytics me-2"></i>
+                        Análisis Avanzado
+                      </button>
+                    </li>
+                  }
+                </ul>
+              </div>
+              
+              <div class="card-body">
+                
+                @if (selectedTab() === 'overview') {
+                  <div class="overview-section">
+                    <div class="row g-4">
+                      
+                      <div class="col-lg-8">
+                        <h6 class="section-title">Resumen de Consumo Actual</h6>
+                        @if (consumption(); as consumptionData) {
+                          <div class="usage-summary">
+                            
+                            <div class="usage-card">
+                              <div class="usage-header">
+                                <div class="usage-icon bg-primary">
+                                  <i class="fas fa-wifi"></i>
+                                </div>
+                                <div class="usage-info">
+                                  <h6 class="usage-title">Datos Móviles</h6>
+                                  <div class="usage-stats">
+                                    <span class="usage-percentage">{{ getFormattedPercentage(consumptionData.data_usage_percentage) }}</span>
+                                    <span class="usage-trend">
+                                      <i [class]="getUsageTrendIcon()"></i>
+                                      {{ getUsageTrendText() }}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div class="progress usage-progress">
+                                <div 
+                                  class="progress-bar progress-bar-striped progress-bar-animated"
+                                  [ngClass]="getDataProgressClass(consumptionData.data_usage_percentage)"
+                                  [style.width.%]="consumptionData.data_usage_percentage">
+                                </div>
+                              </div>
+                              
+                              <div class="usage-details">
+                                <div class="row text-center">
+                                  <div class="col-4">
+                                    <div class="detail-item">
+                                      <div class="detail-value">{{ formatBytes(consumptionData.data_used_mb, 'MB') }}</div>
+                                      <div class="detail-label">Consumido</div>
+                                    </div>
+                                  </div>
+                                  <div class="col-4">
+                                    <div class="detail-item">
+                                      <div class="detail-value">{{ formatBytes(consumptionData.data_remaining_mb, 'MB') }}</div>
+                                      <div class="detail-label">Disponible</div>
+                                    </div>
+                                  </div>
+                                  <div class="col-4">
+                                    <div class="detail-item">
+                                      <div class="detail-value">{{ formatBytes(consumptionData.data_limit_mb, 'MB') }}</div>
+                                      <div class="detail-label">Límite Total</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div class="usage-card">
+                              <div class="usage-header">
+                                <div class="usage-icon bg-warning">
+                                  <i class="fas fa-phone"></i>
+                                </div>
+                                <div class="usage-info">
+                                  <h6 class="usage-title">Minutos de Llamadas</h6>
+                                  <div class="usage-stats">
+                                    <span class="usage-percentage">{{ getFormattedPercentage(consumptionData.minutes_usage_percentage) }}</span>
+                                    <span class="usage-trend">
+                                      <i class="fas fa-clock text-muted"></i>
+                                      Último mes
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div class="progress usage-progress">
+                                <div 
+                                  class="progress-bar progress-bar-striped progress-bar-animated"
+                                  [ngClass]="getMinutesProgressClass(consumptionData.minutes_usage_percentage)"
+                                  [style.width.%]="consumptionData.minutes_usage_percentage">
+                                </div>
+                              </div>
+                              
+                              <div class="usage-details">
+                                <div class="row text-center">
+                                  <div class="col-4">
+                                    <div class="detail-item">
+                                      <div class="detail-value">{{ formatDuration(consumptionData.minutes_used) }}</div>
+                                      <div class="detail-label">Utilizados</div>
+                                    </div>
+                                  </div>
+                                  <div class="col-4">
+                                    <div class="detail-item">
+                                      <div class="detail-value">{{ formatDuration(consumptionData.minutes_remaining) }}</div>
+                                      <div class="detail-label">Restantes</div>
+                                    </div>
+                                  </div>
+                                  <div class="col-4">
+                                    <div class="detail-item">
+                                      <div class="detail-value">{{ formatDuration(consumptionData.minutes_limit) }}</div>
+                                      <div class="detail-label">Límite Total</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            
+                          </div>
+                        }
+                      </div>
+                      
+                      <div class="col-lg-4">
+                        <h6 class="section-title">Estado de la Cuenta</h6>
+                        @if (consumption(); as consumptionData) {
+                          <div class="account-status-card">
+                            
+                            <div class="balance-display">
+                              <div class="balance-icon">
+                                <i class="fas fa-wallet"></i>
+                              </div>
+                              <div class="balance-info">
+                                <div class="balance-label">Saldo Actual</div>
+                                <div class="balance-amount">{{ formatCurrency(consumptionData.account_balance) }}</div>
+                                <div class="balance-status">
+                                  @if (consumptionData.account_balance > 10) {
+                                    <span class="badge bg-success">Saldo Suficiente</span>
+                                  } @else if (consumptionData.account_balance > 5) {
+                                    <span class="badge bg-warning">Saldo Bajo</span>
+                                  } @else {
+                                    <span class="badge bg-danger">Saldo Crítico</span>
+                                  }
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div class="account-details">
+                              <div class="detail-row">
+                                <span class="detail-label">Plan Contratado:</span>
+                                <span class="detail-value">
+                                  <span class="badge bg-primary">{{ customer()!.plan_type }}</span>
+                                </span>
+                              </div>
+                              
+                              <div class="detail-row">
+                                <span class="detail-label">Estado del Servicio:</span>
+                                <span class="detail-value">
+                                  <span class="badge bg-success">
+                                    <i class="fas fa-check-circle me-1"></i>
+                                    Activo
+                                  </span>
+                                </span>
+                              </div>
+                              
+                              <div class="detail-row">
+                                <span class="detail-label">Última Actualización:</span>
+                                <span class="detail-value">
+                                  {{ formatTimeAgo(consumptionData.last_updated) }}
+                                </span>
+                              </div>
+                              
+                              @if (billingCycle(); as cycle) {
+                                <div class="detail-row">
+                                  <span class="detail-label">Días Restantes:</span>
+                                  <span class="detail-value">
+                                    <span class="badge bg-info">{{ cycle.days_remaining }} días</span>
+                                  </span>
+                                </div>
+                              }
+                            </div>
+                            <div class="quick-actions">
+                              <button class="btn btn-primary btn-sm w-100 mb-2">
+                                <i class="fas fa-credit-card me-2"></i>
+                                Recargar Saldo
+                              </button>
+                              <button class="btn btn-outline-secondary btn-sm w-100 mb-2">
+                                <i class="fas fa-exchange-alt me-2"></i>
+                                Cambiar Plan
+                              </button>
+                              <button class="btn btn-outline-info btn-sm w-100">
+                                <i class="fas fa-headset me-2"></i>
+                                Contactar Soporte
+                              </button>
+                            </div>
+                            
+                          </div>
+                        }
+                      </div>
+                      
+                    </div>
+                  </div>
+                }
+                
+                @if (selectedTab() === 'usage') {
+                  <div class="usage-history-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                      <h6 class="section-title mb-0">Historial de Uso</h6>
+                      
+                      <div class="period-selector">
+                        <div class="btn-group btn-group-sm" role="group">
+                          @for (period of [7, 15, 30, 60, 90]; track period) {
+                            <button 
+                              type="button" 
+                              class="btn"
+                              [class.btn-primary]="selectedHistoryDays() === period"
+                              [class.btn-outline-primary]="selectedHistoryDays() !== period"
+                              (click)="changeHistoryPeriod(period)">
+                              {{ period }}d
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                    
+                    @if (usageHistory().length > 0) {
+                      <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                          <div class="stat-card bg-primary text-white">
+                            <div class="stat-icon">
+                              <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="stat-content">
+                              <div class="stat-value">{{ formatBytes(totalDataUsedThisMonth(), 'MB') }}</div>
+                              <div class="stat-label">Total del Mes</div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                          <div class="stat-card bg-success text-white">
+                            <div class="stat-icon">
+                              <i class="fas fa-calendar-day"></i>
+                            </div>
+                            <div class="stat-content">
+                              <div class="stat-value">{{ formatBytes(averageDailyUsage(), 'MB') }}</div>
+                              <div class="stat-label">Promedio Diario</div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                          <div class="stat-card bg-info text-white">
+                            <div class="stat-icon">
+                              <i class="fas fa-crown"></i>
+                            </div>
+                            <div class="stat-content">
+                              <div class="stat-value">
+                                @if (peakUsageDay(); as peak) {
+                                  {{ formatBytes(peak.data_used, 'MB') }}
+                                } @else {
+                                  --
+                                }
+                              </div>
+                              <div class="stat-label">Día de Mayor Uso</div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                          <div class="stat-card bg-warning text-white">
+                            <div class="stat-icon">
+                              <i class="fas fa-history"></i>
+                            </div>
+                            <div class="stat-content">
+                              <div class="stat-value">{{ usageHistory().length }}</div>
+                              <div class="stat-label">Días Registrados</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                          <thead class="table-dark">
+                            <tr>
+                              <th>
+                                <i class="fas fa-calendar me-1"></i>
+                                Fecha
+                              </th>
+                              <th>
+                                <i class="fas fa-wifi me-1"></i>
+                                Datos Usados
+                              </th>
+                              <th>
+                                <i class="fas fa-phone me-1"></i>
+                                Minutos Usados
+                              </th>
+                              <th>
+                                <i class="fas fa-clock me-1"></i>
+                                Hora Pico
+                              </th>
+                              <th>
+                                <i class="fas fa-calendar-week me-1"></i>
+                                Día
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (day of usageHistory().slice(-15); track day.date) {
+                              <tr>
+                                <td>
+                                  {{ formatDate(day.date) }}
+                                </td>
+                                <td>
+                                  <div class="d-flex align-items-center">
+                                    <span class="badge bg-primary me-2">
+                                      {{ formatBytes(day.data_used, 'MB') }}
+                                    </span>
+                                    @if (day.data_used > averageDailyUsage() * 1.5) {
+                                      <i class="fas fa-exclamation-triangle text-warning" title="Uso elevado"></i>
+                                    }
+                                  </div>
+                                </td>
+                                <td>
+                                  <span class="badge bg-secondary">
+                                    {{ formatDuration(day.minutes_used) }}
+                                  </span>
+                                </td>
+                                <td>
+                                  <span class="text-muted">{{ day.peak_usage_hour }}:00</span>
+                                </td>
+                                <td>
+                                  <small class="text-muted">
+                                    {{ getDayName(day.date) }}
+                                  </small>
+                                </td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                      
+                        <div class="download-actions text-center mt-4">
+                        <button class="btn btn-outline-primary me-2" (click)="downloadUsageHistory()">
+                          <i class="fas fa-download me-2"></i>
+                          Descargar CSV Completo
+                        </button>
+                        <button class="btn btn-outline-secondary" (click)="generateDetailedReport()">
+                          <i class="fas fa-file-pdf me-2"></i>
+                          Generar Reporte PDF
+                        </button>
+                      </div>
+                      
+                    } @else {
+                      <div class="empty-state">
+                        <i class="fas fa-chart-line fa-4x text-muted mb-4"></i>
+                        <h5 class="text-muted">No hay historial disponible</h5>
+                        <p class="text-muted">Los datos de uso aparecerán aquí cuando estén disponibles.</p>
+                        <button class="btn btn-primary" (click)="refreshData()">
+                          <i class="fas fa-refresh me-2"></i>
+                          Actualizar Datos
+                        </button>
+                      </div>
+                    }
+                  </div>
+                }
+                
+                @if (selectedTab() === 'network') {
+                  <div class="network-section">
+                    <h6 class="section-title">Información de Red y Conexión</h6>
+                    
+                    @if (networkMetrics(); as metrics) {
+                      <div class="row g-4">
+                        
+                        <div class="col-lg-6">
+                          <div class="network-card">
+                            <h6 class="card-title">
+                              <i class="fas fa-wifi me-2"></i>
+                              Calidad de Conexión
+                            </h6>
+                            
+                            <div class="connection-quality mb-4">
+                              <div class="quality-indicator">
+                                <div class="quality-circle" [ngClass]="'quality-' + getConnectionQualityColor()">
+                                  <span class="quality-text">
+                                    {{ getConnectionQualityText() }}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div class="connection-details">
+                              <div class="detail-row">
+                                <span class="detail-label">Velocidad de Descarga:</span>
+                                <span class="detail-value">{{ formatConnectionSpeed(metrics.connection_speed) }}</span>
+                              </div>
+                              <div class="detail-row">
+                                <span class="detail-label">Fuerza de Señal:</span>
+                                <span class="detail-value">{{ metrics.signal_strength }}%</span>
+                              </div>
+                              <div class="detail-row">
+                                <span class="detail-label">Latencia:</span>
+                                <span class="detail-value">{{ metrics.latency }}ms</span>
+                              </div>
+                              <div class="detail-row">
+                                <span class="detail-label">Tipo de Conexión:</span>
+                                <span class="detail-value">
+                                  <span class="badge bg-info">{{ metrics.connection_type }}</span>
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div class="col-lg-6">
+                          <div class="session-card">
+                            <h6 class="card-title">
+                              <i class="fas fa-clock me-2"></i>
+                              Información de Sesión
+                            </h6>
+                            
+                            <div class="session-details">
+                              <div class="session-item">
+                                <div class="session-icon">
+                                  <i class="fas fa-power-off text-success"></i>
+                                </div>
+                                <div class="session-content">
+                                  <div class="session-label">Tiempo Online</div>
+                                  <div class="session-value">{{ formatDuration(metrics.uptime_hours, 'hours') }}</div>
+                                </div>
+                              </div>
+                              
+                              <div class="session-item">
+                                <div class="session-icon">
+                                  <i class="fas fa-sync text-info"></i>
+                                </div>
+                                <div class="session-content">
+                                  <div class="session-label">Última Sincronización</div>
+                                  <div class="session-value">{{ formatTimeAgo(consumption()!.last_updated) }}</div>
+                                </div>
+                              </div>
+                              
+                              <div class="session-item">
+                                <div class="session-icon">
+                                  <i class="fas fa-mobile-alt text-primary"></i>
+                                </div>
+                                <div class="session-content">
+                                  <div class="session-label">Dispositivo</div>
+                                  <div class="session-value">Móvil Principal</div>
+                                </div>
+                              </div>
+                              
+                            </div>
+                            
+                            <div class="mt-3">
+                              <button class="btn btn-outline-primary btn-sm w-100" (click)="testConnectionSpeed()">
+                                <i class="fas fa-chart-line me-2"></i>
+                                Probar Velocidad
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        
+                      </div>
+                    } @else {
+                      <div class="text-center py-5">
+                        <i class="fas fa-wifi fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">Información de red no disponible</h6>
+                        <p class="text-muted">No se pudieron obtener las métricas de red actuales.</p>
+                      </div>
+                    }
+                  </div>
+                }
+                
+              </div>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  }
+  
+</div>

@@ -1,0 +1,273 @@
+.dashboard-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dashboard-header {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+
+    .dashboard-title {
+        color: white;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 2.5rem;
+
+        @media (max-width: 768px) {
+            font-size: 1.8rem;
+        }
+    }
+
+    .dashboard-subtitle {
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .customer-quick-info {
+        .badge {
+            font-size: 0.8rem;
+        }
+    }
+
+    .dashboard-controls {
+        .status-indicators {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+
+            .status-item {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+
+                i {
+                    width: 16px;
+                }
+            }
+        }
+
+        .control-buttons {
+            .btn {
+                border-radius: 0.5rem;
+                font-weight: 500;
+                transition: all 0.3s ease;
+
+                &:hover {
+                    transform: translateY(-1px);
+                }
+
+                &.btn-outline-light:hover {
+                    background-color: rgba(255, 255, 255, 0.2);
+                    border-color: rgba(255, 255, 255, 0.5);
+                }
+            }
+        }
+    }
+}
+
+.dashboard-content {
+    padding: 2rem 0;
+
+    .container-fluid {
+        max-width: 1400px;
+    }
+}
+
+.loading-state,
+.error-state {
+    padding: 3rem 0;
+}
+
+.spinner-telcox {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+
+    .metric-item {
+        display: flex;
+        align-items: center;
+        padding: 1.5rem;
+        background: rgba(102, 126, 234, 0.05);
+        border-radius: 1rem;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .metric-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+
+            i {
+                color: white;
+                font-size: 1.5rem;
+            }
+        }
+
+        .metric-content {
+            flex: 1;
+
+            .metric-label {
+                font-size: 0.9rem;
+                color: #6c757d;
+                font-weight: 500;
+                margin-bottom: 0.25rem;
+            }
+
+            .metric-value {
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: #495057;
+                margin-bottom: 0.25rem;
+            }
+
+            .metric-detail {
+                font-size: 0.8rem;
+                color: #8c9197;
+            }
+        }
+    }
+}
+
+.alerts-section {
+    .alert {
+        border-radius: 1rem;
+        border: none;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-header {
+        text-align: center;
+
+        .dashboard-controls {
+            margin-top: 1rem;
+
+            .status-indicators {
+                flex-direction: row;
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            .control-buttons {
+                margin-top: 1rem;
+
+                .btn {
+                    margin: 0.25rem;
+                }
+            }
+        }
+    }
+
+    .metrics-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+
+        .metric-item {
+            padding: 1rem;
+
+            .metric-icon {
+                width: 50px;
+                height: 50px;
+
+                i {
+                    font-size: 1.2rem;
+                }
+            }
+        }
+    }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.7;
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+/* Utilidades de gradientes */
+.text-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.bg-gradient-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+}

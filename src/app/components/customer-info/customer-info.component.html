@@ -1,0 +1,69 @@
+<div class="card h-100 customer-card">
+  <div class="card-header bg-gradient-primary text-white">
+    <h6 class="mb-0 d-flex align-items-center">
+      <i class="fas fa-user-circle me-2"></i>
+      Información del Cliente
+    </h6>
+  </div>
+  
+  <div class="card-body p-4">
+    @if (customer) {
+      <div class="customer-avatar-section">
+        <div class="customer-avatar">
+          <span class="avatar-text">{{ customerInitials() }}</span>
+        </div>
+        <div class="customer-status">
+          <i class="fas fa-circle text-success pulse"></i>
+          <small class="text-muted">Online</small>
+        </div>
+      </div>
+      
+      <div class="customer-details">
+        <h5 class="customer-name">{{ customer.name }}</h5>
+        
+        <div class="info-item">
+          <i class="fas fa-phone text-primary"></i>
+          <span>{{ customer.phone }}</span>
+        </div>
+        
+        <div class="info-item">
+          <i class="fas fa-envelope text-primary"></i>
+          <span>{{ customer.email }}</span>
+        </div>
+        
+        <div class="info-item">
+          <i class="fas fa-star text-primary"></i>
+          <span class="badge" [ngClass]="planTypeColor()">
+            {{ customer.plan_type }}
+          </span>
+        </div>
+      </div>
+      
+      <div class="balance-section">
+        <div class="balance-header">
+          <small class="text-muted">Saldo Actual</small>
+          <i [ngClass]="balanceStatus().icon + ' ' + balanceStatus().class"></i>
+        </div>
+        <div class="balance-amount" [ngClass]="balanceStatus().class">
+          {{ balance | currencyEc }}
+        </div>
+        <small class="text-muted">Última actualización: ahora</small>
+      </div>
+      
+      <div class="customer-actions mt-3">
+        <button class="btn btn-outline-primary btn-sm w-100">
+          <i class="fas fa-credit-card me-2"></i>
+          Recargar Saldo
+        </button>
+      </div>
+      
+    } @else {
+      <div class="text-center py-4">
+        <div class="spinner-border spinner-border-sm text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-2 text-muted">Cargando información...</p>
+      </div>
+    }
+  </div>
+</div>

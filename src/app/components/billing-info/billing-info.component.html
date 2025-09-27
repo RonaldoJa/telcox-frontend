@@ -1,0 +1,106 @@
+<div class="card h-100 billing-card">
+  <div class="card-header bg-secondary text-white">
+    <h6 class="mb-0 d-flex align-items-center">
+      <i class="fas fa-calendar-alt me-2"></i>
+      Ciclo de Facturación
+    </h6>
+  </div>
+  
+  <div class="card-body">
+    @if (consumption) {
+      <div class="cycle-progress-section">
+        <div class="cycle-header">
+          <span class="cycle-label">Progreso del Ciclo</span>
+          <span class="cycle-percentage">{{ cycleProgress().toFixed(0) }}%</span>
+        </div>
+        
+        <div class="progress cycle-progress">
+          <div 
+            class="progress-bar bg-gradient-primary"
+            [style.width.%]="cycleProgress()">
+          </div>
+        </div>
+        
+        <div class="cycle-info">
+          <small class="text-muted">
+            {{ daysElapsed() }} de {{ daysInCycle() }} días transcurridos
+          </small>
+        </div>
+      </div>
+      
+      <div class="billing-details">
+        <div class="detail-item">
+          <div class="detail-icon">
+            <i class="fas fa-play-circle text-success"></i>
+          </div>
+          <div class="detail-content">
+            <div class="detail-label">Inicio del Ciclo</div>
+            <div class="detail-value">{{ formatDate(consumption.billing_cycle_start) }}</div>
+          </div>
+        </div>
+        
+        <div class="detail-item">
+          <div class="detail-icon">
+            <i class="fas fa-stop-circle text-danger"></i>
+          </div>
+          <div class="detail-content">
+            <div class="detail-label">Fin del Ciclo</div>
+            <div class="detail-value">{{ formatDate(consumption.billing_cycle_end) }}</div>
+          </div>
+        </div>
+        
+        <div class="detail-item highlight">
+          <div class="detail-icon">
+            <i [ngClass]="getCycleStatusIcon() + ' ' + getCycleStatusColor()"></i>
+          </div>
+          <div class="detail-content">
+            <div class="detail-label">Días Restantes</div>
+            <div class="detail-value" [ngClass]="getCycleStatusColor()">
+              {{ daysRemaining() }} días
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="plan-status">
+        <div class="status-header">
+          <i class="fas fa-star text-warning"></i>
+          <span>Plan {{ customer?.plan_type }}</span>
+        </div>
+        <div class="status-details">
+          <small class="text-muted">
+            Renovación automática: 
+            <span class="text-success">Activa</span>
+          </small>
+        </div>
+      </div>
+      
+      <div class="quick-actions">
+        <button class="btn btn-outline-primary btn-sm w-100 mb-2">
+          <i class="fas fa-history me-2"></i>
+          Ver Historial
+        </button>
+        <button class="btn btn-outline-secondary btn-sm w-100">
+          <i class="fas fa-download me-2"></i>
+          Descargar Factura
+        </button>
+      </div>
+      
+    } @else {
+      <div class="loading-content">
+        <div class="loading-item">
+          <div class="loading-icon"></div>
+          <div class="loading-text"></div>
+        </div>
+        <div class="loading-item">
+          <div class="loading-icon"></div>
+          <div class="loading-text short"></div>
+        </div>
+        <div class="loading-item">
+          <div class="loading-icon"></div>
+          <div class="loading-text"></div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

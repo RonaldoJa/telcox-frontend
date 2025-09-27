@@ -1,0 +1,9 @@
+{
+  "/api/**": {
+    "target": "http://127.0.0.1:5100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "onProxyReq": "function(proxyReq, req, res) { console.log('Proxy request:', req.url); }"
+  }
+}

@@ -1,0 +1,145 @@
+<div class="row g-4 h-100">
+  
+  <div class="col-md-6">
+    <div class="card h-100 usage-card" [attr.data-level]="dataUsageLevel()">
+      <div class="card-header bg-info text-white">
+        <h6 class="mb-0 d-flex align-items-center">
+          <i class="fas fa-wifi me-2"></i>
+          Consumo de Datos
+          @if (loading) {
+            <div class="spinner-border spinner-border-sm ms-auto" role="status"></div>
+          }
+        </h6>
+      </div>
+      
+      <div class="card-body">
+        @if (consumption) {
+          <div class="circular-chart-container">
+            <canvas 
+              #dataChart 
+              width="120" 
+              height="120"
+              class="circular-chart">
+            </canvas>
+          </div>
+          
+          <div class="progress-container">
+            <div class="progress">
+              <div 
+                class="progress-bar progress-bar-striped progress-bar-animated"
+                [ngClass]="dataProgressClass()"
+                [style.width.%]="consumption.data_usage_percentage">
+              </div>
+            </div>
+            <small class="progress-label">
+              {{ consumption.data_usage_percentage.toFixed(1) }}% utilizado
+            </small>
+          </div>
+          
+          <div class="usage-stats">
+            <div class="stat-row">
+              <div class="stat-item">
+                <div class="stat-label">Usado</div>
+                <div class="stat-value used">{{ consumption.data_used_mb | bytes:'MB':1 }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Disponible</div>
+                <div class="stat-value available">{{ consumption.data_remaining_mb | bytes:'MB':1 }}</div>
+              </div>
+            </div>
+            <div class="stat-row">
+              <div class="stat-item full-width">
+                <div class="stat-label">Límite del Plan</div>
+                <div class="stat-value total">{{ consumption.data_limit_mb | bytes:'MB':1 }}</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="usage-recommendation" [attr.data-level]="dataUsageLevel()">
+            <i class="fas fa-lightbulb"></i>
+            <span>{{ getUsageRecommendation('data') }}</span>
+          </div>
+          
+        } @else {
+          <div class="loading-placeholder">
+            <div class="placeholder-circle"></div>
+            <div class="placeholder-text"></div>
+            <div class="placeholder-text short"></div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-6">
+    <div class="card h-100 usage-card" [attr.data-level]="minutesUsageLevel()">
+      <div class="card-header bg-warning text-dark">
+        <h6 class="mb-0 d-flex align-items-center">
+          <i class="fas fa-phone me-2"></i>
+          Minutos Utilizados
+          @if (loading) {
+            <div class="spinner-border spinner-border-sm ms-auto" role="status"></div>
+          }
+        </h6>
+      </div>
+      
+      <div class="card-body">
+        @if (consumption) {
+          <div class="circular-chart-container">
+            <canvas 
+              #minutesChart 
+              width="120" 
+              height="120"
+              class="circular-chart">
+            </canvas>
+          </div>
+          
+          <div class="progress-container">
+            <div class="progress">
+              <div 
+                class="progress-bar progress-bar-striped progress-bar-animated"
+                [ngClass]="minutesProgressClass()"
+                [style.width.%]="consumption.minutes_usage_percentage">
+              </div>
+            </div>
+            <small class="progress-label">
+              {{ consumption.minutes_usage_percentage.toFixed(1) }}% utilizado
+            </small>
+          </div>
+          
+          <div class="usage-stats">
+            <div class="stat-row">
+              <div class="stat-item">
+                <div class="stat-label">Usados</div>
+                <div class="stat-value used">{{ consumption.minutes_used }} min</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Disponibles</div>
+                <div class="stat-value available">{{ consumption.minutes_remaining }} min</div>
+              </div>
+            </div>
+            <div class="stat-row">
+              <div class="stat-item full-width">
+                <div class="stat-label">Límite del Plan</div>
+                <div class="stat-value total">{{ consumption.minutes_limit }} min</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="usage-recommendation" [attr.data-level]="minutesUsageLevel()">
+            <i class="fas fa-lightbulb"></i>
+            <span>{{ getUsageRecommendation('minutes') }}</span>
+          </div>
+          
+        } @else {
+          <div class="loading-placeholder">
+            <div class="placeholder-circle"></div>
+            <div class="placeholder-text"></div>
+            <div class="placeholder-text short"></div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+  
+</div>
